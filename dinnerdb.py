@@ -1,4 +1,4 @@
-import _mysql
+import MySQLdb
 
 class dinners:
 	db_server   = ""
@@ -7,34 +7,36 @@ class dinners:
 	db_name     = ""
 
 	def __init__(self, user, password, server, db_name):
-        	self.db=_mysql.connect(server, user, password, db_name)
+        	self.db=MySQLdb.connect(host=server, user=user, passwd=password, db=db_name, charset='utf8')
 
 	def get_dinners(self, id=-1):
+		cursor = self.db.cursor()
 		list = []
 		if id == -1:
-        		self.db.query("""SELECT * FROM matretter""")
+        		cursor.execute("""SELECT * FROM matretter""")
 		else:
-			self.db.query("""SELECT * FROM matretter WHERE id = {}""".format(id))
+			cursor.execute("""SELECT * FROM matretter WHERE id = {}""".format(id))
 
-		result=self.db.store_result()
-		dinners = result.fetch_row(maxrows=0, how=1)
-
-		for dinner in dinners:
-			list.append(dinner['name'])
+		result=cursor.fetchall()
+		for row in result:
+			list.append(row[1])
 
 		return list
 
 	def get_dinner_id(self, name):
-		self.db.query("""SELECT * FROM matretter WHERE name = \"{}\"""".format(name))
-		result=self.db.store_result()
-		dinners = result.fetch_row(maxrows=0, how=1)
-
-		return dinners[0]['id']
+		cursor = self.db.cursor()
+		self.db.execute("""SELECT * FROM matretter WHERE name = \"{}\"""".format(name))
+		row=cursor.fetchone()
+		while row is not None:
+			return row[0]
+		else:
+			return None
 
 	def get_dinner_weight(self, name):
-                self.db.query("""SELECT * FROM matretter WHERE name = \"{}\"""".format(name))
-                result=self.db.store_result()
-                dinners = result.fetch_row(maxrows=0, how=1)
-
-		return dinners[0]['weight']
+                self.db.execute("""SELECT * FROM matretter WHERE name = \"{}\"""".format(name))
+                row=self.db.fetchone()
+		while row is not None:
+			return row[2]
+		else:
+			return None
 
